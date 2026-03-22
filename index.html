@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>大阪西成食堂</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --red:#c0392b;--red-dark:#8B1A1A;--red-light:#fff5f5;
+  --gray-bg:#f7f5f0;--gray-line:#e8e4dc;
+  --text:#2a2a2a;--text-sub:#777;--white:#ffffff;
+  --radius:10px;--shadow:0 2px 12px rgba(0,0,0,0.08);
+}
+html,body{background:var(--gray-bg);font-family:'Hiragino Kaku Gothic ProN','Hiragino Sans','Noto Sans JP',sans-serif;color:var(--text);font-size:15px}
+#loading{position:fixed;inset:0;background:var(--red-dark);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;transition:opacity .4s}
+#loading .logo{color:#fff;font-size:26px;font-weight:700;letter-spacing:2px;margin-bottom:8px}
+#loading .sub{color:rgba(255,255,255,0.7);font-size:13px;letter-spacing:1px}
+#loading .spinner{width:32px;height:32px;border:3px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;margin-top:24px}
+@keyframes spin{to{transform:rotate(360deg)}}
+#closed-banner{display:none;background:#c0392b;color:#fff;text-align:center;padding:12px;font-size:14px;line-height:1.5}
+.app-header{background:linear-gradient(135deg,var(--red) 0%,var(--red-dark) 100%);padding:0;overflow:hidden}
+.banner-placeholder{width:100%;height:140px;background:linear-gradient(135deg,var(--red) 0%,var(--red-dark) 100%);display:flex;align-items:center;justify-content:center}
+.banner-placeholder span{color:#fff;font-size:22px;font-weight:700;letter-spacing:2px}
+.banner-img{width:100%;height:140px;object-fit:cover;display:block}
+.slideshow{position:relative;overflow:hidden;background:#000;height:120px;display:none}
+.slideshow-track{display:flex;height:100%;transition:transform .5s ease}
+.slide-item{flex-shrink:0;width:100%;height:120px;object-fit:cover}
+.slideshow-dots{position:absolute;bottom:6px;left:0;right:0;display:flex;justify-content:center;gap:5px}
+.dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.5);transition:background .3s}
+.dot.active{background:#fff}
+.header-desc{background:var(--white);padding:10px 14px;font-size:13px;color:var(--text-sub);border-bottom:1px solid var(--gray-line)}
+.page{display:none}.page.active{display:block}
+.nav-bar{background:var(--white);padding:10px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--gray-line);position:sticky;top:0;z-index:10}
+.back-btn{background:none;border:none;color:var(--red);font-size:22px;cursor:pointer;padding:0 6px 0 0;line-height:1}
+.nav-title{font-size:16px;font-weight:700;color:var(--text)}
+.page-content{padding:14px}
+.section-title{font-size:13px;color:var(--text-sub);margin-bottom:10px;letter-spacing:1px}
+.category-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cat-card{background:var(--white);border-radius:var(--radius);border:1px solid var(--gray-line);overflow:hidden;cursor:pointer;transition:transform .15s;box-shadow:var(--shadow)}
+.cat-card:active{transform:scale(0.97)}
+.cat-card-img{width:100%;height:70px;background:var(--gray-line);display:block}
+.cat-card-label{padding:8px 10px;font-size:13px;font-weight:700;color:var(--text);text-align:center}
+.product-list{padding:10px 14px}
+.product-card{background:var(--white);border-radius:var(--radius);border:1px solid var(--gray-line);margin-bottom:10px;padding:12px;box-shadow:var(--shadow)}
+.product-top{display:flex;gap:12px;align-items:center;margin-bottom:10px}
+.product-thumb{width:64px;height:64px;border-radius:8px;object-fit:cover;background:var(--gray-line);flex-shrink:0;border:1px solid var(--gray-line)}
+.product-body{flex:1;min-width:0}
+.product-name{font-size:14px;font-weight:700;color:var(--text)}
+.product-desc{font-size:12px;color:var(--text-sub);margin-top:2px}
+.product-price{font-size:15px;font-weight:700;color:var(--red);margin-top:4px}
+.product-bottom{display:flex;align-items:center;gap:10px;justify-content:flex-end}
+.qty-btn{width:32px;height:32px;border-radius:50%;border:1.5px solid var(--red);background:#fff;color:var(--red);font-size:20px;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center}
+.qty-num{font-size:16px;font-weight:700;min-width:24px;text-align:center}
+.add-cart-btn{flex:1;padding:10px;background:var(--red);color:#fff;border:none;border-radius:var(--radius);font-size:14px;font-weight:700;cursor:pointer}
+.cart-bar{position:fixed;bottom:0;left:0;right:0;background:var(--white);border-top:1px solid var(--gray-line);padding:10px 14px;display:none;align-items:center;justify-content:space-between;box-shadow:0 -2px 12px rgba(0,0,0,0.1)}
+.cart-bar.visible{display:flex}
+.cart-info{font-size:13px;color:var(--text-sub)}
+.cart-info strong{color:var(--red);font-size:16px}
+.cart-btn{background:var(--red);color:#fff;border:none;border-radius:var(--radius);padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:100;align-items:flex-end}
+.modal-overlay.open{display:flex}
+.modal-sheet{background:var(--white);border-radius:18px 18px 0 0;width:100%;max-height:85vh;overflow-y:auto;animation:slideUp .25s ease}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-handle{width:36px;height:4px;background:var(--gray-line);border-radius:2px;margin:10px auto 0}
+.modal-header{padding:12px 16px 10px;border-bottom:1px solid var(--gray-line)}
+.modal-title{font-size:15px;font-weight:700;color:var(--text)}
+.modal-subtitle{font-size:12px;color:var(--text-sub);margin-top:2px}
+.topping-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px 14px}
+.topping-card{border:1.5px solid var(--gray-line);border-radius:10px;padding:10px 8px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s}
+.topping-card.selected{border-color:var(--red);background:var(--red-light)}
+.topping-img{width:100%;height:56px;object-fit:cover;border-radius:6px;background:var(--gray-line);display:block;margin-bottom:6px}
+.topping-name{font-size:12px;font-weight:700;color:var(--text)}
+.topping-price{font-size:12px;color:var(--red);margin:3px 0}
+.topping-toggle{font-size:11px;padding:4px 0;width:100%;border:1px solid var(--red);border-radius:6px;color:var(--red);background:transparent;cursor:pointer;margin-top:4px;transition:background .15s,color .15s}
+.topping-toggle.added{background:var(--red);color:#fff}
+.modal-footer{display:flex;gap:10px;padding:12px 14px;border-top:1px solid var(--gray-line);position:sticky;bottom:0;background:var(--white)}
+.skip-btn{flex:1;padding:12px;border:1px solid var(--gray-line);border-radius:var(--radius);font-size:13px;color:var(--text-sub);background:var(--white);cursor:pointer}
+.confirm-btn{flex:2;padding:12px;background:var(--red);color:#fff;border:none;border-radius:var(--radius);font-size:14px;font-weight:700;cursor:pointer}
+.form-wrap{padding:14px;padding-bottom:80px}
+.form-section-title{font-size:12px;color:var(--text-sub);letter-spacing:1px;margin:16px 0 8px}
+.form-section-title:first-child{margin-top:0}
+.form-group{margin-bottom:12px}
+.form-label{font-size:12px;color:var(--text-sub);margin-bottom:4px;display:block}
+.form-input{width:100%;padding:12px 14px;border:1.5px solid var(--gray-line);border-radius:var(--radius);font-size:15px;color:var(--text);background:var(--white);-webkit-appearance:none}
+.form-input:focus{outline:none;border-color:var(--red)}
+.gps-btn{width:100%;padding:12px 14px;border:1.5px solid var(--red);border-radius:var(--radius);font-size:14px;color:var(--red);background:var(--red-light);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+.delivery-select{width:100%;padding:12px 14px;border:1.5px solid var(--gray-line);border-radius:var(--radius);font-size:15px;color:var(--text);background:var(--white);-webkit-appearance:none;margin-top:8px}
+.order-summary{background:var(--white);border-radius:var(--radius);border:1px solid var(--gray-line);padding:12px 14px;margin-bottom:12px}
+.order-item-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--gray-line);font-size:14px}
+.order-item-row:last-child{border-bottom:none}
+.topping-row{font-size:12px;color:var(--text-sub);padding:3px 0 3px 10px}
+.total-row{display:flex;justify-content:space-between;padding-top:8px;font-weight:700;font-size:16px;color:var(--red)}
+.confirm-section{background:var(--white);border-radius:var(--radius);border:1px solid var(--gray-line);margin-bottom:12px;overflow:hidden}
+.confirm-section-header{background:var(--gray-bg);padding:8px 14px;font-size:12px;color:var(--text-sub);font-weight:700;letter-spacing:1px}
+.confirm-row{display:flex;padding:10px 14px;border-bottom:1px solid var(--gray-line);font-size:14px;gap:10px}
+.confirm-row:last-child{border-bottom:none}
+.confirm-label{color:var(--text-sub);flex-shrink:0;width:80px}
+.confirm-value{color:var(--text);flex:1}
+.primary-btn{width:100%;padding:14px;background:var(--red);color:#fff;border:none;border-radius:var(--radius);font-size:16px;font-weight:700;cursor:pointer;margin-top:8px}
+.secondary-btn{width:100%;padding:13px;background:var(--white);color:var(--text);border:1.5px solid var(--gray-line);border-radius:var(--radius);font-size:15px;cursor:pointer;margin-top:8px}
+.complete-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;padding:30px 20px;text-align:center}
+.complete-icon{font-size:56px;margin-bottom:16px}
+.complete-title{font-size:22px;font-weight:700;color:var(--red);margin-bottom:8px}
+.complete-text{font-size:14px;color:var(--text-sub);line-height:1.7}
+.complete-id{font-size:13px;color:var(--text-sub);margin-top:16px}
+.error-msg{background:#fff0f0;border:1px solid #f5c6cb;border-radius:var(--radius);padding:10px 14px;font-size:13px;color:#c0392b;margin-bottom:12px;display:none}
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <div class="logo">大阪西成食堂</div>
+  <div class="sub">NISHINARISHOKUDO</div>
+  <div class="spinner"></div>
+</div>
+<div id="closed-banner"></div>
+<div class="app-header" id="app-header">
+  <div class="banner-placeholder" id="banner-area"><span id="banner-title">大阪西成食堂</span></div>
+  <div class="slideshow" id="slideshow"><div class="slideshow-track" id="slide-track"></div><div class="slideshow-dots" id="slide-dots"></div></div>
+  <div class="header-desc" id="header-desc"></div>
+</div>
+
+<div class="page active" id="page-top">
+  <div class="page-content">
+    <div class="section-title" id="label-select-category">カテゴリを選択</div>
+    <div class="category-grid" id="category-grid"></div>
+  </div>
+</div>
+
+<div class="page" id="page-products">
+  <div class="nav-bar">
+    <button class="back-btn" onclick="showPage('top')">‹</button>
+    <span class="nav-title" id="product-page-title"></span>
+  </div>
+  <div class="product-list" id="product-list" style="padding-bottom:80px"></div>
+</div>
+
+<div class="page" id="page-form">
+  <div class="nav-bar">
+    <button class="back-btn" onclick="showPage('products')">‹</button>
+    <span class="nav-title" id="label-order-info">ご注文情報</span>
+  </div>
+  <div class="form-wrap">
+    <div class="error-msg" id="form-error"></div>
+    <div class="form-section-title" id="label-order-summary">注文内容</div>
+    <div class="order-summary" id="order-summary-display"></div>
+    <button class="secondary-btn" onclick="showPage('top')" style="margin-bottom:8px">買い物を続ける</button>
+    <div class="form-section-title" id="label-customer-info">お客様情報</div>
+    <div class="form-group"><label class="form-label" id="label-name">お名前</label><input class="form-input" id="input-name" type="text" autocomplete="name"></div>
+    <div class="form-group"><label class="form-label" id="label-phone">電話番号</label><input class="form-input" id="input-phone" type="tel" autocomplete="tel" inputmode="numeric"></div>
+    <div class="form-group"><label class="form-label" id="label-email">メールアドレス</label><input class="form-input" id="input-email" type="email" autocomplete="email" inputmode="email"></div>
+    <div class="form-section-title" id="label-delivery">配達先</div>
+    <div class="form-group">
+      <button class="gps-btn" id="gps-btn" onclick="getLocation()"><span>📍</span><span id="label-gps">現在地から配達先を選択</span></button>
+      <select class="delivery-select" id="delivery-select" style="display:none"><option value="">-- 配達先を選択 --</option></select>
+    </div>
+    <div class="form-section-title" id="label-pickup-section">受取時間</div>
+    <div class="form-group"><label class="form-label" id="label-pickup-time">ご希望の受取時間</label><input class="form-input" id="input-pickup" type="time"></div>
+    <div class="form-group"><label class="form-label" id="label-note">備考（任意）</label><textarea class="form-input" id="input-note" rows="2" style="resize:none"></textarea></div>
+    <button class="primary-btn" id="btn-to-confirm" onclick="goToConfirm()">注文確認へ</button>
+  </div>
+</div>
+
+<div class="page" id="page-confirm">
+  <div class="nav-bar">
+    <button class="back-btn" onclick="showPage('form')">‹</button>
+    <span class="nav-title" id="label-confirm-title">注文確認</span>
+  </div>
+  <div class="form-wrap">
+    <div class="confirm-section"><div class="confirm-section-header" id="label-confirm-order">注文内容</div><div id="confirm-order-body"></div></div>
+    <div class="confirm-section"><div class="confirm-section-header" id="label-confirm-customer">お客様情報</div><div id="confirm-customer-body"></div></div>
+    <div class="confirm-section"><div class="confirm-section-header" id="label-confirm-delivery">配達先・受取時間</div><div id="confirm-delivery-body"></div></div>
+    <div class="error-msg" id="confirm-error"></div>
+    <button class="primary-btn" id="btn-submit" onclick="submitOrder()">この内容で注文する</button>
+    <button class="secondary-btn" onclick="showPage('form')" id="btn-back-form">内容を修正する</button>
+  </div>
+</div>
+
+<div class="page" id="page-complete">
+  <div class="complete-wrap">
+    <div class="complete-icon">🍱</div>
+    <div class="complete-title" id="complete-title">ご注文ありがとうございます</div>
+    <div class="complete-text" id="complete-text">ご注文を受け付けました。<br>準備ができましたらメールにてご連絡いたします。</div>
+    <div class="complete-id" id="complete-id"></div>
+    <button class="primary-btn" style="max-width:280px;margin-top:24px" onclick="showPage('top')" id="btn-back-top">トップへ戻る</button>
+  </div>
+</div>
+
+<div class="cart-bar" id="cart-bar">
+  <div class="cart-info"><span id="cart-count-label"></span><strong id="cart-total-label"></strong></div>
+  <button class="cart-btn" id="cart-btn" onclick="showPage('form')">カートを見る</button>
+</div>
+
+<div class="modal-overlay" id="topping-modal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title" id="modal-product-name"></div>
+      <div class="modal-subtitle" id="label-topping-select">トッピングを選択してください（複数可）</div>
+    </div>
+    <div class="topping-grid" id="topping-grid"></div>
+    <div class="modal-footer">
+      <button class="skip-btn" id="btn-skip" onclick="skipTopping()">スキップ</button>
+      <button class="confirm-btn" id="btn-add-cart" onclick="addToCart()">カートに追加</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// =====================================================
+//  設定：GAS APIのURL（ここを変更してください）
+// =====================================================
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbzLxINUn8J0ek04Vc4qVNxPIjq-2E-gtBXVguwVMkSPl_OMWyFG39VSbMy4tdc5Wd8f/exec';
+
+// =====================================================
+//  多言語UI文言
+// =====================================================
+const UI_TEXT = {
+  ja:{selectCat:'カテゴリを選択',orderInfo:'ご注文情報',orderSummary:'注文内容',customerInfo:'お客様情報',name:'お名前',phone:'電話番号',email:'メールアドレス',delivery:'配達先',gps:'現在地から配達先を選択',pickupSection:'受取時間',pickupTime:'ご希望の受取時間',note:'備考（任意）',toConfirm:'注文確認へ',confirmTitle:'注文確認',confirmOrder:'注文内容',confirmCustomer:'お客様情報',confirmDelivery:'配達先・受取時間',submit:'この内容で注文する',backForm:'内容を修正する',backTop:'トップへ戻る',cartBtn:'カートを見る',skipTopping:'スキップ',addCart:'カートに追加',toppingSelect:'トッピングを選択してください（複数可）',free:'無料',add:'追加',added:'追加済み ✓',items:'点',total:'合計',completeTitle:'ご注文ありがとうございます',completeText:'ご注文を受け付けました。\n準備ができましたらメールにてご連絡いたします。'},
+  en:{selectCat:'Select Category',orderInfo:'Order Information',orderSummary:'Order Summary',customerInfo:'Customer Information',name:'Full Name',phone:'Phone Number',email:'Email Address',delivery:'Delivery Destination',gps:'Select delivery spot from current location',pickupSection:'Pickup Time',pickupTime:'Preferred pickup time',note:'Notes (optional)',toConfirm:'Review Order',confirmTitle:'Order Confirmation',confirmOrder:'Order Items',confirmCustomer:'Customer Info',confirmDelivery:'Delivery & Pickup Time',submit:'Place Order',backForm:'Edit Order',backTop:'Back to Top',cartBtn:'View Cart',skipTopping:'Skip',addCart:'Add to Cart',toppingSelect:'Select toppings (multiple allowed)',free:'Free',add:'Add',added:'Added ✓',items:'items',total:'Total',completeTitle:'Thank you for your order!',completeText:'Your order has been received.\nWe will notify you by email when ready.'},
+  zh:{selectCat:'选择分类',orderInfo:'订单信息',orderSummary:'订单内容',customerInfo:'客户信息',name:'姓名',phone:'电话号码',email:'电子邮件',delivery:'配送地址',gps:'从当前位置选择配送地点',pickupSection:'取餐时间',pickupTime:'希望取餐时间',note:'备注（选填）',toConfirm:'确认订单',confirmTitle:'订单确认',confirmOrder:'订单内容',confirmCustomer:'客户信息',confirmDelivery:'配送地址・取餐时间',submit:'确认下单',backForm:'修改订单',backTop:'返回首页',cartBtn:'查看购物车',skipTopping:'跳过',addCart:'加入购物车',toppingSelect:'选择配料（可多选）',free:'免费',add:'添加',added:'已添加 ✓',items:'件',total:'合计',completeTitle:'感谢您的订购！',completeText:'您的订单已收到。\n准备好后将通过邮件通知您。'},
+  ko:{selectCat:'카테고리 선택',orderInfo:'주문 정보',orderSummary:'주문 내용',customerInfo:'고객 정보',name:'이름',phone:'전화번호',email:'이메일 주소',delivery:'배달지',gps:'현재 위치에서 배달지 선택',pickupSection:'수령 시간',pickupTime:'원하시는 수령 시간',note:'비고 (선택)',toConfirm:'주문 확인',confirmTitle:'주문 확인',confirmOrder:'주문 내용',confirmCustomer:'고객 정보',confirmDelivery:'배달지・수령 시간',submit:'주문하기',backForm:'수정하기',backTop:'홈으로 돌아가기',cartBtn:'장바구니 보기',skipTopping:'건너뛰기',addCart:'장바구니에 추가',toppingSelect:'토핑 선택 (복수 가능)',free:'무료',add:'추가',added:'추가됨 ✓',items:'개',total:'합계',completeTitle:'주문해 주셔서 감사합니다!',completeText:'주문이 접수되었습니다.\n준비가 완료되면 이메일로 연락드리겠습니다.'},
+  it:{selectCat:'Seleziona Categoria',orderInfo:'Informazioni Ordine',orderSummary:'Riepilogo Ordine',customerInfo:'Informazioni Cliente',name:'Nome Completo',phone:'Numero di Telefono',email:'Indirizzo Email',delivery:'Indirizzo di Consegna',gps:'Seleziona il punto di consegna dalla posizione attuale',pickupSection:'Orario di Ritiro',pickupTime:'Orario di ritiro preferito',note:'Note (opzionale)',toConfirm:'Conferma Ordine',confirmTitle:'Conferma Ordine',confirmOrder:'Articoli Ordinati',confirmCustomer:'Info Cliente',confirmDelivery:'Consegna e Orario',submit:'Effettua Ordine',backForm:'Modifica Ordine',backTop:'Torna alla Home',cartBtn:'Vedi Carrello',skipTopping:'Salta',addCart:'Aggiungi al Carrello',toppingSelect:'Seleziona topping (multiplo consentito)',free:'Gratuito',add:'Aggiungi',added:'Aggiunto ✓',items:'articoli',total:'Totale',completeTitle:'Grazie per il tuo ordine!',completeText:"Il tuo ordine è stato ricevuto.\nTi invieremo un'email quando sarà pronto."},
+  fr:{selectCat:'Choisir une Catégorie',orderInfo:'Informations de Commande',orderSummary:'Récapitulatif',customerInfo:'Informations Client',name:'Nom Complet',phone:'Numéro de Téléphone',email:'Adresse Email',delivery:'Adresse de Livraison',gps:'Sélectionner le point de livraison depuis la position actuelle',pickupSection:'Heure de Retrait',pickupTime:'Heure de retrait souhaitée',note:'Notes (facultatif)',toConfirm:'Confirmer la Commande',confirmTitle:'Confirmation',confirmOrder:'Articles Commandés',confirmCustomer:'Info Client',confirmDelivery:'Livraison et Heure',submit:'Passer la Commande',backForm:'Modifier la Commande',backTop:"Retour à l'Accueil",cartBtn:'Voir le Panier',skipTopping:'Passer',addCart:'Ajouter au Panier',toppingSelect:'Sélectionner des garnitures (plusieurs possibles)',free:'Gratuit',add:'Ajouter',added:'Ajouté ✓',items:'articles',total:'Total',completeTitle:'Merci pour votre commande !',completeText:"Votre commande a été reçue.\nNous vous informerons par email quand elle sera prête."}
+};
+
+const LANG_MAP={'ja':'ja','zh':'zh','ko':'ko','it':'it','fr':'fr','en':'en','zh-cn':'zh','zh-tw':'zh','zh-hk':'zh'};
+let lang='ja', appData={}, deliverySpots=[], cart=[], pendingItem=null, selectedToppings=[], slideIndex=0;
+
+function t(k){return(UI_TEXT[lang]||UI_TEXT.en)[k]||UI_TEXT.en[k]||k}
+function esc(s){if(!s)return '';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+// =====================================================
+//  初期化：GAS APIからデータ取得
+// =====================================================
+window.addEventListener('DOMContentLoaded', async () => {
+  const nl=(navigator.language||'ja').toLowerCase().replace('_','-');
+  lang=LANG_MAP[nl]||LANG_MAP[nl.split('-')[0]]||'ja';
+
+  try {
+    const res = await fetch(GAS_URL + '?action=getAll&lang=' + lang);
+    const data = await res.json();
+
+    appData = {
+      content:  data.content  || {},
+      products: data.products || [],
+      delivery: data.delivery || [],
+      ui:       data.ui       || {},
+      isOpen:   data.isOpen   || {isOpen:true}
+    };
+    deliverySpots = appData.delivery;
+
+    // 営業時間外チェック
+    if (appData.isOpen && !appData.isOpen.isOpen) {
+      document.body.innerHTML = `
+        <div style="position:fixed;inset:0;background:linear-gradient(135deg,#8B1A1A 0%,#c0392b 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px;color:#fff;">
+          <div style="font-size:52px;margin-bottom:20px">🍱</div>
+          <div style="font-size:22px;font-weight:700;letter-spacing:2px;margin-bottom:28px">大阪西成食堂</div>
+          <div style="font-size:16px;line-height:2.2;opacity:0.95">${t('closed')}</div>
+          <div style="margin-top:28px;font-size:13px;opacity:0.6">営業時間 ${appData.isOpen.hours||''}</div>
+        </div>`;
+      return;
+    }
+
+    renderHeader();
+    renderCategories();
+    applyTexts();
+
+  } catch(e) {
+    console.error('データ取得エラー:', e);
+    document.getElementById('category-grid').innerHTML =
+      '<p style="color:var(--text-sub);font-size:13px;padding:10px">データを読み込めませんでした。再読み込みしてください。</p>';
+  } finally {
+    const loading = document.getElementById('loading');
+    loading.style.opacity='0';
+    setTimeout(()=>loading.style.display='none', 400);
+  }
+});
+
+function applyTexts() {
+  const s=(id,k)=>{const e=document.getElementById(id);if(e)e.textContent=t(k)};
+  s('label-select-category','selectCat');s('label-order-info','orderInfo');
+  s('label-order-summary','orderSummary');s('label-customer-info','customerInfo');
+  s('label-name','name');s('label-phone','phone');s('label-email','email');
+  s('label-delivery','delivery');s('label-gps','gps');
+  s('label-pickup-section','pickupSection');s('label-pickup-time','pickupTime');
+  s('label-note','note');s('btn-to-confirm','toConfirm');
+  s('label-confirm-title','confirmTitle');s('label-confirm-order','confirmOrder');
+  s('label-confirm-customer','confirmCustomer');s('label-confirm-delivery','confirmDelivery');
+  s('btn-submit','submit');s('btn-back-form','backForm');s('btn-back-top','backTop');
+  s('btn-skip','skipTopping');s('cart-btn','cartBtn');
+  s('label-topping-select','toppingSelect');s('complete-title','completeTitle');
+  const ct=document.getElementById('complete-text');
+  if(ct) ct.innerHTML=t('completeText').replace(/\n/g,'<br>');
+  if(appData.content){
+    const hd=document.getElementById('header-desc');
+    if(hd) hd.textContent=appData.content.description1||'';
+    const bt=document.getElementById('banner-title');
+    if(bt) bt.textContent=appData.content.mainTitle||'大阪西成食堂';
+  }
+}
+
+function renderHeader() {
+  const ui=appData.ui||{};
+  if(ui.bannerUrl){
+    document.getElementById('banner-area').innerHTML=`<img class="banner-img" src="${esc(ui.bannerUrl)}" alt="banner" onerror="this.style.display='none'">`;
+  }
+  const imgs=(ui.slideImages||[]).filter(Boolean);
+  if(imgs.length>0){
+    const ss=document.getElementById('slideshow');
+    ss.style.display='block';
+    document.getElementById('slide-track').innerHTML=imgs.map(u=>`<img class="slide-item" src="${esc(u)}" alt="">`).join('');
+    document.getElementById('slide-dots').innerHTML=imgs.map((_,i)=>`<div class="dot${i===0?' active':''}" id="dot-${i}"></div>`).join('');
+    const iv=(ui.slideInterval||3)*1000;
+    setInterval(()=>{
+      slideIndex=(slideIndex+1)%imgs.length;
+      document.getElementById('slide-track').style.transform=`translateX(-${slideIndex*100}%)`;
+      document.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('active',i===slideIndex));
+    },iv);
+  }
+}
+
+function renderCategories() {
+  const grid=document.getElementById('category-grid');
+  const cats=(appData.content&&appData.content.categories)||[];
+  if(cats.length===0){grid.innerHTML='<p style="color:var(--text-sub);font-size:13px;padding:10px">カテゴリがありません</p>';return;}
+  grid.innerHTML=cats.map(c=>`<div class="cat-card" onclick="selectCategory(${c.index},'${esc(c.name)}')"><div class="cat-card-img"></div><div class="cat-card-label">${esc(c.name)}</div></div>`).join('');
+}
+
+function selectCategory(idx,name){
+  document.getElementById('product-page-title').textContent=name;
+  const prods=(appData.products||[]).filter(p=>p.categoryIndex==idx);
+  document.getElementById('product-list').innerHTML=prods.map(p=>`
+    <div class="product-card">
+      <div class="product-top">
+        <img class="product-thumb" src="${esc(p.imageUrl||'')}" alt="${esc(p.name)}" onerror="this.style.background='var(--gray-line)'">
+        <div class="product-body">
+          <div class="product-name">${esc(p.name)}</div>
+          <div class="product-desc">${esc(p.description||'')}</div>
+          <div class="product-price">¥${p.price.toLocaleString()}</div>
+        </div>
+      </div>
+      <div class="product-bottom">
+        <button class="qty-btn" onclick="changeQty('${esc(p.id)}',-1)">－</button>
+        <span class="qty-num" id="qty-${esc(p.id)}">1</span>
+        <button class="qty-btn" onclick="changeQty('${esc(p.id)}',1)">＋</button>
+        <button class="add-cart-btn" onclick="openTopping('${esc(p.id)}')">${t('addCart')}</button>
+      </div>
+    </div>`).join('');
+  showPage('products');
+}
+
+function changeQty(id,delta){
+  const el=document.getElementById('qty-'+id);
+  if(!el)return;
+  let q=parseInt(el.textContent)+delta;
+  if(q<1)q=1;
+  el.textContent=q;
+}
+
+function openTopping(id){
+  const p=(appData.products||[]).find(x=>x.id===id);
+  if(!p)return;
+  const qtyEl=document.getElementById('qty-'+id);
+  pendingItem={...p, pendingQty: qtyEl ? parseInt(qtyEl.textContent) : 1};
+  selectedToppings=[];
+  document.getElementById('modal-product-name').textContent=p.name;
+  if(!p.toppings||p.toppings.length===0){addToCartDirect(pendingItem,[]);return;}
+  document.getElementById('topping-grid').innerHTML=p.toppings.map((tp,i)=>
+    `<div class="topping-card" id="tc-${i}" onclick="toggleTopping(${i})">
+      <img class="topping-img" src="${esc(tp.imageUrl||'')}" alt="${esc(tp.name)}" onerror="this.style.background='var(--gray-line)'">
+      <div class="topping-name">${esc(tp.name)}</div>
+      <div class="topping-price">${tp.price>0?'+¥'+tp.price.toLocaleString():t('free')}</div>
+      <button class="topping-toggle" id="tb-${i}">${t('add')}</button>
+    </div>`).join('');
+  updateAddBtn();
+  document.getElementById('topping-modal').classList.add('open');
+}
+
+function toggleTopping(i){
+  const tp=pendingItem.toppings[i];
+  const idx=selectedToppings.findIndex(x=>x.name===tp.name);
+  const card=document.getElementById('tc-'+i);
+  const btn=document.getElementById('tb-'+i);
+  if(idx>=0){selectedToppings.splice(idx,1);card.classList.remove('selected');btn.classList.remove('added');btn.textContent=t('add');}
+  else{selectedToppings.push(tp);card.classList.add('selected');btn.classList.add('added');btn.textContent=t('added');}
+  updateAddBtn();
+}
+
+function updateAddBtn(){
+  const ts=selectedToppings.reduce((s,x)=>s+x.price,0);
+  document.getElementById('btn-add-cart').textContent=t('addCart')+(ts>0?' +¥'+ts.toLocaleString():'');
+}
+
+function skipTopping(){addToCartDirect(pendingItem,[]);closeModal();}
+function addToCart(){addToCartDirect(pendingItem,[...selectedToppings]);closeModal();}
+
+function addToCartDirect(p,tps){
+  const qty=p.pendingQty||1;
+  const ex=cart.find(x=>x.product.id===p.id&&JSON.stringify(x.toppings)===JSON.stringify(tps));
+  if(ex){ex.qty+=qty;}else{cart.push({product:p,toppings:tps,qty:qty});}
+  updateCartBar();
+}
+
+function closeModal(){
+  document.getElementById('topping-modal').classList.remove('open');
+  pendingItem=null;selectedToppings=[];
+}
+
+function cartTotal(){
+  return cart.reduce((s,it)=>{
+    const ts=it.toppings.reduce((x,tp)=>x+tp.price,0);
+    return s+(it.product.price+ts)*it.qty;
+  },0);
+}
+
+function updateCartBar(){
+  const bar=document.getElementById('cart-bar');
+  const cnt=cart.reduce((s,it)=>s+it.qty,0);
+  if(cnt===0){bar.classList.remove('visible');return;}
+  bar.classList.add('visible');
+  document.getElementById('cart-count-label').textContent=cnt+t('items')+'　';
+  document.getElementById('cart-total-label').textContent='¥'+cartTotal().toLocaleString();
+}
+
+function showPage(p){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  const el=document.getElementById('page-'+p);
+  if(el){el.classList.add('active');window.scrollTo(0,0);}
+  if(p==='form')renderOrderSummary();
+  if(p==='products')updateCartBar();
+}
+
+function renderOrderSummary(){
+  let html='';
+  cart.forEach(it=>{
+    const ts=it.toppings.reduce((s,tp)=>s+tp.price,0);
+    html+=`<div class="order-item-row"><span>${esc(it.product.name)} × ${it.qty}</span><span>¥${((it.product.price+ts)*it.qty).toLocaleString()}</span></div>`;
+    it.toppings.forEach(tp=>{html+=`<div class="topping-row">＋${esc(tp.name)} ${tp.price>0?'+¥'+tp.price:t('free')}</div>`;});
+  });
+  html+=`<div class="total-row"><span>${t('total')}</span><span>¥${cartTotal().toLocaleString()}</span></div>`;
+  document.getElementById('order-summary-display').innerHTML=html;
+}
+
+function getLocation(){
+  const btn=document.getElementById('gps-btn');
+  btn.innerHTML='<span>📍</span><span>取得中...</span>';
+  navigator.geolocation.getCurrentPosition(
+    pos=>{btn.innerHTML=`<span>📍</span><span>${t('gps')}</span>`;showDeliveryList(pos.coords.latitude,pos.coords.longitude);},
+    ()=>{btn.innerHTML=`<span>📍</span><span>${t('gps')}</span>`;showDeliveryList(null,null);},
+    {timeout:10000}
+  );
+}
+
+function showDeliveryList(lat,lng){
+  const sel=document.getElementById('delivery-select');
+  sel.style.display='block';
+  sel.innerHTML='<option value="">-- 配達先を選択 --</option>';
+  let spots=deliverySpots.filter(Boolean);
+  if(lat&&lng){spots=spots.map(s=>({...s,dist:Math.sqrt(Math.pow(s.lat-lat,2)+Math.pow(s.lng-lng,2))})).sort((a,b)=>a.dist-b.dist);}
+  spots.forEach(s=>{const o=document.createElement('option');o.value=s.id;o.textContent=s.name+(s.type?'（'+s.type+'）':'');sel.appendChild(o);});
+}
+
+function goToConfirm(){
+  const err=document.getElementById('form-error');
+  err.style.display='none';
+  const name=document.getElementById('input-name').value.trim();
+  const phone=document.getElementById('input-phone').value.trim();
+  const email=document.getElementById('input-email').value.trim();
+  const deliv=document.getElementById('delivery-select').value;
+  const pickup=document.getElementById('input-pickup').value;
+  if(!name||!phone||!email||!deliv||!pickup){
+    err.textContent=lang==='ja'?'必須項目をすべて入力してください':'Please fill in all required fields.';
+    err.style.display='block';return;
+  }
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+    err.textContent=lang==='ja'?'メールアドレスの形式が正しくありません':'Please enter a valid email address.';
+    err.style.display='block';return;
+  }
+  renderConfirm(name,phone,email,deliv,pickup);
+  showPage('confirm');
+}
+
+function renderConfirm(name,phone,email,delivId,pickup){
+  const spot=deliverySpots.find(s=>s.id===delivId);
+  const note=document.getElementById('input-note').value.trim();
+  let oh='';
+  cart.forEach(it=>{
+    const ts=it.toppings.reduce((s,tp)=>s+tp.price,0);
+    oh+=`<div class="confirm-row"><span class="confirm-label">${esc(it.product.name)}</span><span class="confirm-value">× ${it.qty}　¥${((it.product.price+ts)*it.qty).toLocaleString()}</span></div>`;
+    it.toppings.forEach(tp=>{oh+=`<div class="confirm-row" style="padding:4px 14px"><span class="confirm-label" style="font-size:12px">　＋${esc(tp.name)}</span><span class="confirm-value" style="font-size:12px">${tp.price>0?'+¥'+tp.price:t('free')}</span></div>`;});
+  });
+  oh+=`<div class="confirm-row" style="font-weight:700"><span class="confirm-label" style="color:var(--red)">${t('total')}</span><span class="confirm-value" style="color:var(--red)">¥${cartTotal().toLocaleString()}</span></div>`;
+  document.getElementById('confirm-order-body').innerHTML=oh;
+  document.getElementById('confirm-customer-body').innerHTML=
+    `<div class="confirm-row"><span class="confirm-label">${t('name')}</span><span class="confirm-value">${esc(name)}</span></div>
+     <div class="confirm-row"><span class="confirm-label">${t('phone')}</span><span class="confirm-value">${esc(phone)}</span></div>
+     <div class="confirm-row"><span class="confirm-label">${t('email')}</span><span class="confirm-value">${esc(email)}</span></div>
+     ${note?`<div class="confirm-row"><span class="confirm-label">${t('note')}</span><span class="confirm-value">${esc(note)}</span></div>`:''}`;
+  document.getElementById('confirm-delivery-body').innerHTML=
+    `<div class="confirm-row"><span class="confirm-label">${t('delivery')}</span><span class="confirm-value">${esc(spot?spot.name:delivId)}</span></div>
+     <div class="confirm-row"><span class="confirm-label">${t('pickupTime')}</span><span class="confirm-value">${pickup}</span></div>`;
+}
+
+async function submitOrder(){
+  const btn=document.getElementById('btn-submit');
+  btn.disabled=true;
+  btn.textContent=lang==='ja'?'送信中...':'Sending...';
+  const name=document.getElementById('input-name').value.trim();
+  const phone=document.getElementById('input-phone').value.trim();
+  const email=document.getElementById('input-email').value.trim();
+  const delivId=document.getElementById('delivery-select').value;
+  const pickup=document.getElementById('input-pickup').value;
+  const note=document.getElementById('input-note').value.trim();
+  const spot=deliverySpots.find(s=>s.id===delivId);
+  try{
+    const res=await fetch(GAS_URL,{
+      method:'POST',
+      headers:{'Content-Type':'text/plain'},
+      body:JSON.stringify({
+        action:'submitOrder',
+        order:{lang,name,phone,email,deliveryId:delivId,deliveryName:spot?spot.name:delivId,deliveryAddress:spot?spot.address:'',pickupTime:pickup,note,
+          items:cart.map(it=>({id:it.product.id,name:it.product.name,price:it.product.price,qty:it.qty,toppings:it.toppings})),
+          total:cartTotal()}
+      })
+    });
+    const data=await res.json();
+    if(data.success){
+      document.getElementById('complete-id').textContent=(lang==='ja'?'注文番号：':'Order ID: ')+data.orderId;
+      cart=[];updateCartBar();showPage('complete');
+    }else{throw new Error(data.error||'Error');}
+  }catch(e){
+    const er=document.getElementById('confirm-error');
+    er.textContent=lang==='ja'?'注文の送信に失敗しました。もう一度お試しください。':'Failed to submit. Please try again.';
+    er.style.display='block';
+    btn.disabled=false;btn.textContent=t('submit');
+  }
+}
+</script>
+</body>
+</html>
