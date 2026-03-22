@@ -325,7 +325,12 @@ function renderCategories() {
   const grid=document.getElementById('category-grid');
   const cats=(appData.content&&appData.content.categories)||[];
   if(cats.length===0){grid.innerHTML='<p style="color:var(--text-sub);font-size:13px;padding:10px">カテゴリがありません</p>';return;}
-  grid.innerHTML=cats.map(c=>`<div class="cat-card" onclick="selectCategory(${c.index},'${esc(c.name)}')"><div class="cat-card-img"></div><div class="cat-card-label">${esc(c.name)}</div></div>`).join('');
+  grid.innerHTML=cats.map(c=>`<div class="cat-card" onclick="selectCategory(${c.index},'${esc(c.name)}')">
+    ${c.imageUrl
+      ? `<img class="cat-card-img" src="${esc(c.imageUrl)}" alt="${esc(c.name)}" onerror="this.style.background='var(--gray-line)';this.style.display='block'" style="object-fit:cover">`
+      : `<div class="cat-card-img"></div>`}
+    <div class="cat-card-label">${esc(c.name)}</div>
+  </div>`).join('');
 }
 
 function selectCategory(idx,name){
