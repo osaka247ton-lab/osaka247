@@ -520,16 +520,11 @@ async function submitOrder(){
   const note=document.getElementById('input-note').value.trim();
   const spot=deliverySpots.find(s=>s.id===delivId);
   try{
-    const res=await fetch(GAS_URL,{
-      method:'POST',
-      headers:{'Content-Type':'text/plain'},
-      body:JSON.stringify({
-        action:'submitOrder',
-        order:{lang,name,phone,email,deliveryId:delivId,deliveryName:spot?spot.name:delivId,deliveryAddress:spot?spot.address:'',pickupTime:pickup,note,
-          items:cart.map(it=>({id:it.product.id,name:it.product.name,price:it.product.price,qty:it.qty,toppings:it.toppings})),
-          total:cartTotal()}
-      })
-    });
+  const res = await fetch(GAS_URL + '?action=getAll&lang=' + lang, {
+  method: 'GET',
+  mode: 'cors',
+  redirect: 'follow'
+});
     const data=await res.json();
     if(data.success){
       document.getElementById('complete-id').textContent=(lang==='ja'?'注文番号：':'Order ID: ')+data.orderId;
