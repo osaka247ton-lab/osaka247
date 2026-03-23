@@ -42,14 +42,14 @@ html,body{background:var(--gray-bg);font-family:'Hiragino Kaku Gothic ProN','Hir
 .cat-card-img{width:100%;height:70px;background:var(--gray-line);display:block}
 .cat-card-label{padding:8px 10px;font-size:13px;font-weight:700;color:var(--text);text-align:center}
 .product-list{padding:10px 14px}
-.product-card{background:var(--white);border-radius:var(--radius);border:1px solid var(--gray-line);margin-bottom:10px;padding:12px;box-shadow:var(--shadow)}
-.product-top{display:flex;gap:12px;align-items:center;margin-bottom:10px}
-.product-thumb{width:64px;height:64px;border-radius:8px;object-fit:cover;background:var(--gray-line);flex-shrink:0;border:1px solid var(--gray-line)}
-.product-body{flex:1;min-width:0}
+.product-card{background:var(--white);border-radius:var(--radius);border:1px solid var(--gray-line);margin-bottom:10px;padding:0;box-shadow:var(--shadow);overflow:hidden}
+.product-top{display:flex;flex-direction:column;gap:0;margin-bottom:0}
+.product-thumb{width:100%;height:180px;object-fit:cover;background:var(--gray-line);display:block;border-bottom:1px solid var(--gray-line)}
+.product-body{flex:1;min-width:0;padding:10px 12px 4px}
 .product-name{font-size:14px;font-weight:700;color:var(--text)}
 .product-desc{font-size:12px;color:var(--text-sub);margin-top:2px}
 .product-price{font-size:15px;font-weight:700;color:var(--red);margin-top:4px}
-.product-bottom{display:flex;align-items:center;gap:10px;justify-content:flex-end}
+.product-bottom{display:flex;align-items:center;gap:10px;justify-content:flex-end;padding:0 12px 12px}
 .qty-btn{width:32px;height:32px;border-radius:50%;border:1.5px solid var(--red);background:#fff;color:var(--red);font-size:20px;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center}
 .qty-num{font-size:16px;font-weight:700;min-width:24px;text-align:center}
 .add-cart-btn{flex:1;padding:10px;background:var(--red);color:#fff;border:none;border-radius:var(--radius);font-size:14px;font-weight:700;cursor:pointer}
@@ -211,7 +211,7 @@ html,body{background:var(--gray-bg);font-family:'Hiragino Kaku Gothic ProN','Hir
 // =====================================================
 //  設定：GAS APIのURL（ここを変更してください）
 // =====================================================
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbwvwuuBFxJGY8CarWU-5gATVoeyTHYA74spWM1esy1zLIvfKD5HLvTwJzWoIoCln9RN/exec';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbzLxINUn8J0ek04Vc4qVNxPIjq-2E-gtBXVguwVMkSPl_OMWyFG39VSbMy4tdc5Wd8f/exec';
 
 // =====================================================
 //  多言語UI文言
@@ -520,11 +520,16 @@ async function submitOrder(){
   const note=document.getElementById('input-note').value.trim();
   const spot=deliverySpots.find(s=>s.id===delivId);
   try{
-  const res = await fetch(GAS_URL + '?action=getAll&lang=' + lang, {
-  method: 'GET',
-  mode: 'cors',
-  redirect: 'follow'
-});
+    const res=await fetch(GAS_URL,{
+      method:'POST',
+      headers:{'Content-Type':'text/plain'},
+      body:JSON.stringify({
+        action:'submitOrder',
+        order:{lang,name,phone,email,deliveryId:delivId,deliveryName:spot?spot.name:delivId,deliveryAddress:spot?spot.address:'',pickupTime:pickup,note,
+          items:cart.map(it=>({id:it.product.id,name:it.product.name,price:it.product.price,qty:it.qty,toppings:it.toppings})),
+          total:cartTotal()}
+      })
+    });
     const data=await res.json();
     if(data.success){
       document.getElementById('complete-id').textContent=(lang==='ja'?'注文番号：':'Order ID: ')+data.orderId;
