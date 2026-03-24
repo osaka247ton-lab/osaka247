@@ -201,7 +201,7 @@ html,body{background:var(--gray-bg);font-family:'Hiragino Kaku Gothic ProN','Hir
     </div>
     <div class="topping-grid" id="topping-grid"></div>
     <div class="modal-footer">
-      <button class="skip-btn" id="btn-skip" onclick="skipTopping()">スキップ</button>
+      <button class="skip-btn" id="btn-skip" onclick="skipTopping()">トッピング・追加なし</button>
       <button class="confirm-btn" id="btn-add-cart" onclick="addToCart()">カートに追加</button>
     </div>
   </div>
@@ -211,18 +211,18 @@ html,body{background:var(--gray-bg);font-family:'Hiragino Kaku Gothic ProN','Hir
 // =====================================================
 //  設定：GAS APIのURL（ここを変更してください）
 // =====================================================
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbwvwuuBFxJGY8CarWU-5gATVoeyTHYA74spWM1esy1zLIvfKD5HLvTwJzWoIoCln9RN/exec';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbzLxINUn8J0ek04Vc4qVNxPIjq-2E-gtBXVguwVMkSPl_OMWyFG39VSbMy4tdc5Wd8f/exec';
 
 // =====================================================
 //  多言語UI文言
 // =====================================================
 const UI_TEXT = {
-  ja:{selectCat:'カテゴリを選択',orderInfo:'ご注文情報',orderSummary:'注文内容',customerInfo:'お客様情報',name:'お名前',phone:'電話番号',email:'メールアドレス',delivery:'配達先',gps:'現在地から配達先を選択',pickupSection:'受取時間',pickupTime:'ご希望の受取時間',note:'備考（任意）',toConfirm:'注文確認へ',confirmTitle:'注文確認',confirmOrder:'注文内容',confirmCustomer:'お客様情報',confirmDelivery:'配達先・受取時間',submit:'この内容で注文する',backForm:'内容を修正する',backTop:'トップへ戻る',cartBtn:'カートを見る',skipTopping:'スキップ',addCart:'カートに追加',toppingSelect:'トッピングを選択してください（複数可）',free:'無料',add:'追加',added:'追加済み ✓',items:'点',total:'合計',completeTitle:'ご注文ありがとうございます',completeText:'ご注文を受け付けました。\n準備ができましたらメールにてご連絡いたします。'},
-  en:{selectCat:'Select Category',orderInfo:'Order Information',orderSummary:'Order Summary',customerInfo:'Customer Information',name:'Full Name',phone:'Phone Number',email:'Email Address',delivery:'Delivery Destination',gps:'Select delivery spot from current location',pickupSection:'Pickup Time',pickupTime:'Preferred pickup time',note:'Notes (optional)',toConfirm:'Review Order',confirmTitle:'Order Confirmation',confirmOrder:'Order Items',confirmCustomer:'Customer Info',confirmDelivery:'Delivery & Pickup Time',submit:'Place Order',backForm:'Edit Order',backTop:'Back to Top',cartBtn:'View Cart',skipTopping:'Skip',addCart:'Add to Cart',toppingSelect:'Select toppings (multiple allowed)',free:'Free',add:'Add',added:'Added ✓',items:'items',total:'Total',completeTitle:'Thank you for your order!',completeText:'Your order has been received.\nWe will notify you by email when ready.'},
-  zh:{selectCat:'选择分类',orderInfo:'订单信息',orderSummary:'订单内容',customerInfo:'客户信息',name:'姓名',phone:'电话号码',email:'电子邮件',delivery:'配送地址',gps:'从当前位置选择配送地点',pickupSection:'取餐时间',pickupTime:'希望取餐时间',note:'备注（选填）',toConfirm:'确认订单',confirmTitle:'订单确认',confirmOrder:'订单内容',confirmCustomer:'客户信息',confirmDelivery:'配送地址・取餐时间',submit:'确认下单',backForm:'修改订单',backTop:'返回首页',cartBtn:'查看购物车',skipTopping:'跳过',addCart:'加入购物车',toppingSelect:'选择配料（可多选）',free:'免费',add:'添加',added:'已添加 ✓',items:'件',total:'合计',completeTitle:'感谢您的订购！',completeText:'您的订单已收到。\n准备好后将通过邮件通知您。'},
-  ko:{selectCat:'카테고리 선택',orderInfo:'주문 정보',orderSummary:'주문 내용',customerInfo:'고객 정보',name:'이름',phone:'전화번호',email:'이메일 주소',delivery:'배달지',gps:'현재 위치에서 배달지 선택',pickupSection:'수령 시간',pickupTime:'원하시는 수령 시간',note:'비고 (선택)',toConfirm:'주문 확인',confirmTitle:'주문 확인',confirmOrder:'주문 내용',confirmCustomer:'고객 정보',confirmDelivery:'배달지・수령 시간',submit:'주문하기',backForm:'수정하기',backTop:'홈으로 돌아가기',cartBtn:'장바구니 보기',skipTopping:'건너뛰기',addCart:'장바구니에 추가',toppingSelect:'토핑 선택 (복수 가능)',free:'무료',add:'추가',added:'추가됨 ✓',items:'개',total:'합계',completeTitle:'주문해 주셔서 감사합니다!',completeText:'주문이 접수되었습니다.\n준비가 완료되면 이메일로 연락드리겠습니다.'},
-  it:{selectCat:'Seleziona Categoria',orderInfo:'Informazioni Ordine',orderSummary:'Riepilogo Ordine',customerInfo:'Informazioni Cliente',name:'Nome Completo',phone:'Numero di Telefono',email:'Indirizzo Email',delivery:'Indirizzo di Consegna',gps:'Seleziona il punto di consegna dalla posizione attuale',pickupSection:'Orario di Ritiro',pickupTime:'Orario di ritiro preferito',note:'Note (opzionale)',toConfirm:'Conferma Ordine',confirmTitle:'Conferma Ordine',confirmOrder:'Articoli Ordinati',confirmCustomer:'Info Cliente',confirmDelivery:'Consegna e Orario',submit:'Effettua Ordine',backForm:'Modifica Ordine',backTop:'Torna alla Home',cartBtn:'Vedi Carrello',skipTopping:'Salta',addCart:'Aggiungi al Carrello',toppingSelect:'Seleziona topping (multiplo consentito)',free:'Gratuito',add:'Aggiungi',added:'Aggiunto ✓',items:'articoli',total:'Totale',completeTitle:'Grazie per il tuo ordine!',completeText:"Il tuo ordine è stato ricevuto.\nTi invieremo un'email quando sarà pronto."},
-  fr:{selectCat:'Choisir une Catégorie',orderInfo:'Informations de Commande',orderSummary:'Récapitulatif',customerInfo:'Informations Client',name:'Nom Complet',phone:'Numéro de Téléphone',email:'Adresse Email',delivery:'Adresse de Livraison',gps:'Sélectionner le point de livraison depuis la position actuelle',pickupSection:'Heure de Retrait',pickupTime:'Heure de retrait souhaitée',note:'Notes (facultatif)',toConfirm:'Confirmer la Commande',confirmTitle:'Confirmation',confirmOrder:'Articles Commandés',confirmCustomer:'Info Client',confirmDelivery:'Livraison et Heure',submit:'Passer la Commande',backForm:'Modifier la Commande',backTop:"Retour à l'Accueil",cartBtn:'Voir le Panier',skipTopping:'Passer',addCart:'Ajouter au Panier',toppingSelect:'Sélectionner des garnitures (plusieurs possibles)',free:'Gratuit',add:'Ajouter',added:'Ajouté ✓',items:'articles',total:'Total',completeTitle:'Merci pour votre commande !',completeText:"Votre commande a été reçue.\nNous vous informerons par email quand elle sera prête."}
+  ja:{selectCat:'カテゴリを選択',orderInfo:'ご注文情報',orderSummary:'注文内容',customerInfo:'お客様情報',name:'お名前',phone:'電話番号',email:'メールアドレス',delivery:'配達先',gps:'現在地から配達先を選択',pickupSection:'受取時間',pickupTime:'ご希望の受取時間',note:'備考（任意）',toConfirm:'注文確認へ',confirmTitle:'注文確認',confirmOrder:'注文内容',confirmCustomer:'お客様情報',confirmDelivery:'配達先・受取時間',submit:'この内容で注文する',backForm:'内容を修正する',backTop:'トップへ戻る',cartBtn:'カートを見る',skipTopping:'トッピング・追加なし',addCart:'トッピングを追加',toppingSelect:'トッピングを選択してください（複数可）',free:'無料',add:'追加',added:'追加済み ✓',items:'点',total:'合計',completeTitle:'ご注文ありがとうございます',completeText:'ご注文を受け付けました。\n準備ができましたらメールにてご連絡いたします。'},
+  en:{selectCat:'Select Category',orderInfo:'Order Information',orderSummary:'Order Summary',customerInfo:'Customer Information',name:'Full Name',phone:'Phone Number',email:'Email Address',delivery:'Delivery Destination',gps:'Select delivery spot from current location',pickupSection:'Pickup Time',pickupTime:'Preferred pickup time',note:'Notes (optional)',toConfirm:'Review Order',confirmTitle:'Order Confirmation',confirmOrder:'Order Items',confirmCustomer:'Customer Info',confirmDelivery:'Delivery & Pickup Time',submit:'Place Order',backForm:'Edit Order',backTop:'Back to Top',cartBtn:'View Cart',skipTopping:'No Topping',addCart:'Add Topping',toppingSelect:'Select toppings (multiple allowed)',free:'Free',add:'Add',added:'Added ✓',items:'items',total:'Total',completeTitle:'Thank you for your order!',completeText:'Your order has been received.\nWe will notify you by email when ready.'},
+  zh:{selectCat:'选择分类',orderInfo:'订单信息',orderSummary:'订单内容',customerInfo:'客户信息',name:'姓名',phone:'电话号码',email:'电子邮件',delivery:'配送地址',gps:'从当前位置选择配送地点',pickupSection:'取餐时间',pickupTime:'希望取餐时间',note:'备注（选填）',toConfirm:'确认订单',confirmTitle:'订单确认',confirmOrder:'订单内容',confirmCustomer:'客户信息',confirmDelivery:'配送地址・取餐时间',submit:'确认下单',backForm:'修改订单',backTop:'返回首页',cartBtn:'查看购物车',skipTopping:'不加配料',addCart:'添加配料',toppingSelect:'选择配料（可多选）',free:'免费',add:'添加',added:'已添加 ✓',items:'件',total:'合计',completeTitle:'感谢您的订购！',completeText:'您的订单已收到。\n准备好后将通过邮件通知您。'},
+  ko:{selectCat:'카테고리 선택',orderInfo:'주문 정보',orderSummary:'주문 내용',customerInfo:'고객 정보',name:'이름',phone:'전화번호',email:'이메일 주소',delivery:'배달지',gps:'현재 위치에서 배달지 선택',pickupSection:'수령 시간',pickupTime:'원하시는 수령 시간',note:'비고 (선택)',toConfirm:'주문 확인',confirmTitle:'주문 확인',confirmOrder:'주문 내용',confirmCustomer:'고객 정보',confirmDelivery:'배달지・수령 시간',submit:'주문하기',backForm:'수정하기',backTop:'홈으로 돌아가기',cartBtn:'장바구니 보기',skipTopping:'토핑 없음',addCart:'토핑 추가',toppingSelect:'토핑 선택 (복수 가능)',free:'무료',add:'추가',added:'추가됨 ✓',items:'개',total:'합계',completeTitle:'주문해 주셔서 감사합니다!',completeText:'주문이 접수되었습니다.\n준비가 완료되면 이메일로 연락드리겠습니다.'},
+  it:{selectCat:'Seleziona Categoria',orderInfo:'Informazioni Ordine',orderSummary:'Riepilogo Ordine',customerInfo:'Informazioni Cliente',name:'Nome Completo',phone:'Numero di Telefono',email:'Indirizzo Email',delivery:'Indirizzo di Consegna',gps:'Seleziona il punto di consegna dalla posizione attuale',pickupSection:'Orario di Ritiro',pickupTime:'Orario di ritiro preferito',note:'Note (opzionale)',toConfirm:'Conferma Ordine',confirmTitle:'Conferma Ordine',confirmOrder:'Articoli Ordinati',confirmCustomer:'Info Cliente',confirmDelivery:'Consegna e Orario',submit:'Effettua Ordine',backForm:'Modifica Ordine',backTop:'Torna alla Home',cartBtn:'Vedi Carrello',skipTopping:'Senza Topping',addCart:'Aggiungi Topping',toppingSelect:'Seleziona topping (multiplo consentito)',free:'Gratuito',add:'Aggiungi',added:'Aggiunto ✓',items:'articoli',total:'Totale',completeTitle:'Grazie per il tuo ordine!',completeText:"Il tuo ordine è stato ricevuto.\nTi invieremo un'email quando sarà pronto."},
+  fr:{selectCat:'Choisir une Catégorie',orderInfo:'Informations de Commande',orderSummary:'Récapitulatif',customerInfo:'Informations Client',name:'Nom Complet',phone:'Numéro de Téléphone',email:'Adresse Email',delivery:'Adresse de Livraison',gps:'Sélectionner le point de livraison depuis la position actuelle',pickupSection:'Heure de Retrait',pickupTime:'Heure de retrait souhaitée',note:'Notes (facultatif)',toConfirm:'Confirmer la Commande',confirmTitle:'Confirmation',confirmOrder:'Articles Commandés',confirmCustomer:'Info Client',confirmDelivery:'Livraison et Heure',submit:'Passer la Commande',backForm:'Modifier la Commande',backTop:"Retour à l'Accueil",cartBtn:'Voir le Panier',skipTopping:'Sans Garniture',addCart:'Ajouter Garniture',toppingSelect:'Sélectionner des garnitures (plusieurs possibles)',free:'Gratuit',add:'Ajouter',added:'Ajouté ✓',items:'articles',total:'Total',completeTitle:'Merci pour votre commande !',completeText:"Votre commande a été reçue.\nNous vous informerons par email quand elle sera prête."}
 };
 
 const LANG_MAP={'ja':'ja','zh':'zh','ko':'ko','it':'it','fr':'fr','en':'en','zh-cn':'zh','zh-tw':'zh','zh-hk':'zh'};
@@ -435,7 +435,21 @@ function showPage(p){
   if(el){el.classList.add('active');window.scrollTo(0,0);}
   if(p==='form')renderOrderSummary();
   if(p==='products')updateCartBar();
+  // ブラウザ履歴にページを追加
+  history.pushState({page:p}, '', '');
 }
+
+// ブラウザの戻るボタン処理（カート保持・トップに戻る）
+window.addEventListener('popstate', function(event) {
+  // どのページからでもトップに戻す（カートは保持）
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  const top = document.getElementById('page-top');
+  if(top) top.classList.add('active');
+  window.scrollTo(0,0);
+  updateCartBar();
+  // 履歴を維持（再度戻るを押してもトップに留まる）
+  history.pushState({page:'top'}, '', '');
+});
 
 function renderOrderSummary(){
   let html='';
