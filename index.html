@@ -87,7 +87,8 @@ html,body{background:var(--gray-bg);font-family:'Hiragino Kaku Gothic ProN','Hir
 .gps-btn{width:100%;padding:12px 14px;border:1.5px solid var(--red);border-radius:var(--radius);font-size:14px;color:var(--red);background:var(--red-light);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
 .delivery-select{width:100%;padding:12px 14px;border:1.5px solid var(--gray-line);border-radius:var(--radius);font-size:15px;color:var(--text);background:var(--white);-webkit-appearance:none;margin-top:8px}
 .order-summary{background:var(--white);border-radius:var(--radius);border:1px solid var(--gray-line);padding:12px 14px;margin-bottom:12px}
-.order-item-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--gray-line);font-size:14px}
+.order-item-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--gray-line);font-size:14px}
+.delete-btn{background:none;border:none;color:#c0392b;font-size:18px;cursor:pointer;padding:0 0 0 8px;line-height:1;flex-shrink:0}
 .order-item-row:last-child{border-bottom:none}
 .topping-row{font-size:12px;color:var(--text-sub);padding:3px 0 3px 10px}
 .total-row{display:flex;justify-content:space-between;padding-top:8px;font-weight:700;font-size:16px;color:var(--red)}
@@ -433,8 +434,15 @@ function showPage(p){
   document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
   const el=document.getElementById('page-'+p);
   if(el){el.classList.add('active');window.scrollTo(0,0);}
-  if(p==='form')renderOrderSummary();
+  if(p==='form'){renderOrderSummary();setDefaultPickupTime();}
   if(p==='products')updateCartBar();
+  // フォーム・確認ページではカートバーを非表示
+  const bar=document.getElementById('cart-bar');
+  if(p==='form'||p==='confirm'||p==='complete'){
+    bar.classList.remove('visible');
+  } else {
+    updateCartBar();
+  }
   // ブラウザ履歴にページを追加
   history.pushState({page:p}, '', '');
 }
@@ -453,13 +461,33 @@ window.addEventListener('popstate', function(event) {
 
 function renderOrderSummary(){
   let html='';
-  cart.forEach(it=>{
+  cart.forEach((it,idx)=>{
     const ts=it.toppings.reduce((s,tp)=>s+tp.price,0);
-    html+=`<div class="order-item-row"><span>${esc(it.product.name)} × ${it.qty}</span><span>¥${((it.product.price+ts)*it.qty).toLocaleString()}</span></div>`;
+    html+=`<div class="order-item-row">
+      <span style="flex:1">${esc(it.product.name)} × ${it.qty}</span>
+      <span>¥${((it.product.price+ts)*it.qty).toLocaleString()}</span>
+      <button class="delete-btn" onclick="removeFromCart(${idx})" title="削除">✕</button>
+    </div>`;
     it.toppings.forEach(tp=>{html+=`<div class="topping-row">＋${esc(tp.name)} ${tp.price>0?'+¥'+tp.price:t('free')}</div>`;});
   });
   html+=`<div class="total-row"><span>${t('total')}</span><span>¥${cartTotal().toLocaleString()}</span></div>`;
   document.getElementById('order-summary-display').innerHTML=html;
+}
+
+function removeFromCart(idx){
+  cart.splice(idx,1);
+  renderOrderSummary();
+  updateCartBar();
+}
+
+function setDefaultPickupTime(){
+  const el=document.getElementById('input-pickup');
+  if(!el||el.value) return; // 既に入力済みなら変更しない
+  const now=new Date();
+  now.setMinutes(now.getMinutes()+30);
+  const hh=String(now.getHours()).padStart(2,'0');
+  const mm=String(now.getMinutes()).padStart(2,'0');
+  el.value=hh+':'+mm;
 }
 
 function getLocation(){
@@ -489,12 +517,34 @@ function goToConfirm(){
   const email=document.getElementById('input-email').value.trim();
   const deliv=document.getElementById('delivery-select').value;
   const pickup=document.getElementById('input-pickup').value;
-  if(!name||!phone||!email||!deliv||!pickup){
-    err.textContent=lang==='ja'?'必須項目をすべて入力してください':'Please fill in all required fields.';
-    err.style.display='block';return;
+
+  // 項目名の多言語対応
+  const fieldNames={
+    name: {ja:'お名前',en:'Full Name',zh:'姓名',ko:'이름',it:'Nome',fr:'Nom'},
+    phone:{ja:'電話番号',en:'Phone Number',zh:'电话号码',ko:'전화번호',it:'Telefono',fr:'Téléphone'},
+    email:{ja:'メールアドレス',en:'Email Address',zh:'电子邮件',ko:'이메일',it:'Email',fr:'Email'},
+    deliv:{ja:'配達先',en:'Delivery Destination',zh:'配送地址',ko:'배달지',it:'Indirizzo',fr:'Adresse'},
+    pickup:{ja:'受取時間',en:'Pickup Time',zh:'取餐时间',ko:'수령 시간',it:'Orario',fr:'Heure'}
+  };
+  const required={ja:'を記入してください',en:' is required',zh:'为必填项',ko:'을(를) 입력해주세요',it:' è obbligatorio',fr:' est requis'};
+  const checks=[
+    {val:name, key:'name'},
+    {val:phone,key:'phone'},
+    {val:email,key:'email'},
+    {val:deliv,key:'deliv'},
+    {val:pickup,key:'pickup'}
+  ];
+  for(const c of checks){
+    if(!c.val){
+      const fn=(fieldNames[c.key]&&fieldNames[c.key][lang])||fieldNames[c.key]['en'];
+      const req=required[lang]||required['en'];
+      err.textContent= lang==='zh'||lang==='ko' ? fn+req : '「'+fn+'」'+req;
+      err.style.display='block';return;
+    }
   }
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
-    err.textContent=lang==='ja'?'メールアドレスの形式が正しくありません':'Please enter a valid email address.';
+    const emailErr={ja:'メールアドレスの形式が正しくありません',en:'Please enter a valid email address.',zh:'请输入有效的电子邮件地址',ko:'올바른 이메일 주소를 입력해주세요',it:'Inserire un indirizzo email valido',fr:'Veuillez saisir une adresse email valide'};
+    err.textContent=emailErr[lang]||emailErr['en'];
     err.style.display='block';return;
   }
   renderConfirm(name,phone,email,deliv,pickup);
