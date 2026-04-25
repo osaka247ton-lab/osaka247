@@ -428,8 +428,9 @@ window.addEventListener('DOMContentLoaded', async () => {
     };
     deliverySpots = appData.delivery;
 
-    // ── 構築中チェック（isOpen より先に判定）──
-    if (appData.isOpen && appData.isOpen.underConstruction) {
+    // ── 構築中チェック（?preview=1 のときはスキップ）──
+    const isPreview = new URLSearchParams(window.location.search).get('preview') === '1';
+    if (!isPreview && appData.isOpen && appData.isOpen.underConstruction) {
       showUnderConstruction(lang);
       return; // 以降の通常UIは表示しない
     }
