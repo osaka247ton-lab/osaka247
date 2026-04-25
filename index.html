@@ -18,6 +18,58 @@ html,body{background:var(--gray-bg);font-family:'Hiragino Kaku Gothic ProN','Hir
 #loading .sub{color:rgba(255,255,255,0.7);font-size:13px;letter-spacing:1px}
 #loading .spinner{width:32px;height:32px;border:3px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;margin-top:24px}
 @keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── 構築中画面 ── */
+#under-construction{
+  display:none;position:fixed;inset:0;background:var(--gray-bg);
+  overflow-y:auto;z-index:500;
+  font-family:'Hiragino Kaku Gothic ProN','Hiragino Sans','Noto Sans JP',sans-serif;
+}
+.uc-inner{
+  min-height:100vh;display:flex;flex-direction:column;
+  align-items:center;padding:40px 20px 60px;
+}
+.uc-icon-wrap{
+  width:72px;height:72px;border-radius:50%;
+  background:#f0ede8;border:1px solid #e0ddd8;
+  display:flex;align-items:center;justify-content:center;margin:0 auto 24px;
+}
+.uc-icon-wrap svg{width:34px;height:34px;stroke:#888}
+.uc-title{font-size:22px;font-weight:700;text-align:center;margin-bottom:12px;color:var(--text)}
+.uc-sub{font-size:15px;color:var(--text-sub);text-align:center;line-height:1.7;margin-bottom:32px}
+.uc-menu-btn{
+  display:block;width:100%;max-width:340px;
+  padding:14px 24px;border:1px solid #ccc;border-radius:12px;
+  font-size:15px;font-weight:700;color:var(--text);background:#fff;
+  cursor:pointer;text-align:center;margin-bottom:32px;
+  transition:background .15s;
+}
+.uc-menu-btn:hover{background:#f5f3f0}
+.uc-divider{width:100%;max-width:340px;border:none;border-top:1px solid #e5e3de;margin-bottom:28px;display:none}
+.uc-slider-section{width:100%;max-width:340px;display:none}
+.uc-slider-wrap{
+  width:100%;position:relative;overflow:hidden;
+  border-radius:12px;border:1px solid #e5e3de;
+  background:#f0ede8;aspect-ratio:3/4;touch-action:pan-y;cursor:grab;
+}
+.uc-slider-wrap:active{cursor:grabbing}
+.uc-slides{display:flex;height:100%;transition:transform .35s cubic-bezier(.4,0,.2,1);will-change:transform}
+.uc-slide{flex:0 0 100%;height:100%;display:flex;align-items:center;justify-content:center}
+.uc-slide img{width:100%;height:100%;object-fit:contain;display:block}
+.uc-slide-loading{font-size:13px;color:#aaa}
+.uc-nav-arrows{display:flex;justify-content:space-between;margin-top:12px;gap:8px}
+.uc-nav-arrow{
+  flex:1;padding:10px;border:1px solid #e0ddd8;border-radius:8px;
+  background:#fff;font-size:20px;cursor:pointer;text-align:center;
+  color:#555;transition:background .15s;
+}
+.uc-nav-arrow:hover{background:#f5f3f0}
+.uc-dots{display:flex;gap:7px;justify-content:center;margin-top:14px}
+.uc-dot{width:7px;height:7px;border-radius:50%;background:#ccc;transition:background .2s;cursor:pointer}
+.uc-dot.active{background:#333}
+.uc-page-indicator{font-size:13px;color:#aaa;text-align:center;margin-top:8px}
+.uc-swipe-hint{font-size:12px;color:#bbb;text-align:center;margin-top:6px}
+
 #closed-banner{display:none;background:#c0392b;color:#fff;text-align:center;padding:12px;font-size:14px;line-height:1.5}
 .app-header{background:linear-gradient(135deg,var(--red) 0%,var(--red-dark) 100%);padding:0;overflow:hidden}
 .banner-placeholder{width:100%;height:140px;background:linear-gradient(135deg,var(--red) 0%,var(--red-dark) 100%);display:flex;align-items:center;justify-content:center}
@@ -115,6 +167,40 @@ html,body{background:var(--gray-bg);font-family:'Hiragino Kaku Gothic ProN','Hir
   <div class="sub">NISHINARISHOKUDO</div>
   <div class="spinner"></div>
 </div>
+
+<!-- ── 構築中画面 ── -->
+<div id="under-construction">
+  <div class="uc-inner">
+    <div class="uc-icon-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437l1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008z"/>
+      </svg>
+    </div>
+    <h1 class="uc-title" id="uc-title">システム構築中</h1>
+    <p class="uc-sub" id="uc-sub">現在、オンライン注文システムを<br>構築中です。ご不便をおかけします。</p>
+    <button class="uc-menu-btn" id="uc-menu-btn" onclick="ucShowMenu()">店内メニューはこちら ↓</button>
+    <hr class="uc-divider" id="uc-divider">
+    <div class="uc-slider-section" id="uc-slider-section">
+      <div class="uc-slider-wrap" id="uc-slider">
+        <div class="uc-slides" id="uc-slides">
+          <div class="uc-slide"><span class="uc-slide-loading">読み込み中...</span></div>
+          <div class="uc-slide"><span class="uc-slide-loading">読み込み中...</span></div>
+          <div class="uc-slide"><span class="uc-slide-loading">読み込み中...</span></div>
+          <div class="uc-slide"><span class="uc-slide-loading">読み込み中...</span></div>
+          <div class="uc-slide"><span class="uc-slide-loading">読み込み中...</span></div>
+        </div>
+      </div>
+      <div class="uc-nav-arrows">
+        <button class="uc-nav-arrow" onclick="ucGoTo(ucCurrent-1)">&#8592;</button>
+        <button class="uc-nav-arrow" onclick="ucGoTo(ucCurrent+1)">&#8594;</button>
+      </div>
+      <div class="uc-dots" id="uc-dots"></div>
+      <p class="uc-page-indicator" id="uc-page-indicator">1 / 5</p>
+      <p class="uc-swipe-hint" id="uc-swipe-hint">← スワイプでページをめくれます →</p>
+    </div>
+  </div>
+</div>
+
 <div id="closed-banner"></div>
 <div class="app-header" id="app-header">
   <div class="banner-placeholder" id="banner-area"><span id="banner-title">大阪西成食堂</span></div>
@@ -210,9 +296,99 @@ html,body{background:var(--gray-bg);font-family:'Hiragino Kaku Gothic ProN','Hir
 
 <script>
 // =====================================================
-//  設定：GAS APIのURL（ここを変更してください）
+//  設定
 // =====================================================
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbzIztN8KNqAarlYx3PSqDN065ChBB8xot0JTaYvVWZPEPn5L-G_sjjrcsrUvbrKiLVL/exec';
+
+// =====================================================
+//  構築中画面 多言語テキスト
+// =====================================================
+const UC_TEXT = {
+  ja:{ title:'システム構築中', sub:'現在、オンライン注文システムを<br>構築中です。ご不便をおかけします。', btn:'店内メニューはこちら ↓', swipe:'← スワイプでページをめくれます →' },
+  zh:{ title:'系统建设中', sub:'目前正在建设在线点餐系统。<br>给您带来不便，敬请谅解。', btn:'查看店内菜单 ↓', swipe:'← 左右滑动翻页 →' },
+  en:{ title:'System under construction', sub:'Our online ordering system is<br>currently being built. Thank you for your patience.', btn:'View our menu ↓', swipe:'← Swipe to browse →' },
+  ko:{ title:'시스템 구축 중', sub:'현재 온라인 주문 시스템을<br>구축 중입니다. 불편을 드려 죄송합니다.', btn:'매장 메뉴 보기 ↓', swipe:'← 스와이프로 페이지 넘기기 →' },
+  it:{ title:'Sistema in costruzione', sub:'Il sistema di ordinazione online<br>è in fase di costruzione. Ci scusiamo per il disagio.', btn:'Vedi il menu ↓', swipe:'← Scorri per sfogliare →' },
+  fr:{ title:'Système en construction', sub:'Notre système de commande en ligne<br>est en cours de construction. Merci de votre patience.', btn:'Voir le menu ↓', swipe:'← Balayez pour parcourir →' }
+};
+
+// メニュー画像（Google Drive ID → lh3 URL）
+const UC_IMAGE_IDS = [
+  '1oCRk8dXonrAjmPWqcFHEQnW5TCjXqusD',
+  '15Fzhl10xFavk4ATyDw4bL4shTHYiYb0a',
+  '1pXZw-EDdoMb140Wj6g8Une2J4tryWmOK',
+  '1g0Ol0XlOxG4XcAxGwC0qPvFHzKhiNCta',
+  '1_axwwMBiSCdgB_3UVjcEau0Tdssq2rNJ'
+];
+
+let ucCurrent = 0, ucMenuLoaded = false, ucStartX = 0;
+
+function showUnderConstruction(langCode) {
+  const uc = document.getElementById('under-construction');
+  uc.style.display = 'block';
+  const tx = UC_TEXT[langCode] || UC_TEXT['en'];
+  document.getElementById('uc-title').textContent = tx.title;
+  document.getElementById('uc-sub').innerHTML = tx.sub;
+  document.getElementById('uc-menu-btn').textContent = tx.btn;
+  document.getElementById('uc-swipe-hint').textContent = tx.swipe;
+  document.getElementById('uc-page-indicator').textContent = '1 / ' + UC_IMAGE_IDS.length;
+}
+
+function ucShowMenu() {
+  document.getElementById('uc-menu-btn').style.display = 'none';
+  document.getElementById('uc-divider').style.display = 'block';
+  document.getElementById('uc-slider-section').style.display = 'block';
+  if (!ucMenuLoaded) {
+    ucMenuLoaded = true;
+    ucLoadImages();
+    ucBuildDots();
+    ucSetupTouch();
+  }
+  document.getElementById('uc-slider-section').scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+function ucLoadImages() {
+  UC_IMAGE_IDS.forEach(function(id, i) {
+    var img = new Image();
+    img.onload = function() {
+      var slide = document.getElementById('uc-slides').children[i];
+      slide.innerHTML = '';
+      slide.appendChild(img);
+    };
+    img.onerror = function() {
+      var s = document.getElementById('uc-slides').children[i];
+      if (s) s.querySelector('.uc-slide-loading').textContent = 'Page ' + (i+1);
+    };
+    img.src = 'https://lh3.googleusercontent.com/d/' + id;
+    img.alt = 'Menu ' + (i+1);
+    img.style.cssText = 'width:100%;height:100%;object-fit:contain;display:block';
+  });
+}
+
+function ucBuildDots() {
+  var dotsEl = document.getElementById('uc-dots');
+  UC_IMAGE_IDS.forEach(function(_, i) {
+    var d = document.createElement('div');
+    d.className = 'uc-dot' + (i===0?' active':'');
+    d.onclick = (function(idx){ return function(){ ucGoTo(idx); }; })(i);
+    dotsEl.appendChild(d);
+  });
+}
+
+function ucGoTo(n) {
+  ucCurrent = Math.max(0, Math.min(UC_IMAGE_IDS.length-1, n));
+  document.getElementById('uc-slides').style.transform = 'translateX(-'+(ucCurrent*100)+'%)';
+  document.querySelectorAll('.uc-dot').forEach(function(d,i){ d.classList.toggle('active', i===ucCurrent); });
+  document.getElementById('uc-page-indicator').textContent = (ucCurrent+1) + ' / ' + UC_IMAGE_IDS.length;
+}
+
+function ucSetupTouch() {
+  var el = document.getElementById('uc-slider');
+  el.addEventListener('touchstart', function(e){ ucStartX = e.touches[0].clientX; }, {passive:true});
+  el.addEventListener('touchend',   function(e){ var dx=e.changedTouches[0].clientX-ucStartX; if(Math.abs(dx)>40) ucGoTo(ucCurrent+(dx<0?1:-1)); }, {passive:true});
+  el.addEventListener('mousedown',  function(e){ ucStartX = e.clientX; });
+  el.addEventListener('mouseup',    function(e){ var dx=e.clientX-ucStartX; if(Math.abs(dx)>40) ucGoTo(ucCurrent+(dx<0?1:-1)); });
+}
 
 // =====================================================
 //  多言語UI文言
@@ -233,7 +409,7 @@ function t(k){return(UI_TEXT[lang]||UI_TEXT.en)[k]||UI_TEXT.en[k]||k}
 function esc(s){if(!s)return '';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 
 // =====================================================
-//  初期化：GAS APIからデータ取得
+//  初期化
 // =====================================================
 window.addEventListener('DOMContentLoaded', async () => {
   const nl=(navigator.language||'ja').toLowerCase().replace('_','-');
@@ -252,7 +428,13 @@ window.addEventListener('DOMContentLoaded', async () => {
     };
     deliverySpots = appData.delivery;
 
-    // 営業時間外チェック
+    // ── 構築中チェック（isOpen より先に判定）──
+    if (appData.isOpen && appData.isOpen.underConstruction) {
+      showUnderConstruction(lang);
+      return; // 以降の通常UIは表示しない
+    }
+
+    // ── 営業時間外チェック ──
     if (appData.isOpen && !appData.isOpen.isOpen) {
       document.body.innerHTML = `
         <div style="position:fixed;inset:0;background:linear-gradient(135deg,#8B1A1A 0%,#c0392b 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px;color:#fff;">
@@ -436,26 +618,21 @@ function showPage(p){
   if(el){el.classList.add('active');window.scrollTo(0,0);}
   if(p==='form'){renderOrderSummary();setDefaultPickupTime();}
   if(p==='products')updateCartBar();
-  // フォーム・確認ページではカートバーを非表示
   const bar=document.getElementById('cart-bar');
   if(p==='form'||p==='confirm'||p==='complete'){
     bar.classList.remove('visible');
   } else {
     updateCartBar();
   }
-  // ブラウザ履歴にページを追加
   history.pushState({page:p}, '', '');
 }
 
-// ブラウザの戻るボタン処理（カート保持・トップに戻る）
 window.addEventListener('popstate', function(event) {
-  // どのページからでもトップに戻す（カートは保持）
   document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
   const top = document.getElementById('page-top');
   if(top) top.classList.add('active');
   window.scrollTo(0,0);
   updateCartBar();
-  // 履歴を維持（再度戻るを押してもトップに留まる）
   history.pushState({page:'top'}, '', '');
 });
 
@@ -482,7 +659,7 @@ function removeFromCart(idx){
 
 function setDefaultPickupTime(){
   const el=document.getElementById('input-pickup');
-  if(!el||el.value) return; // 既に入力済みなら変更しない
+  if(!el||el.value) return;
   const now=new Date();
   now.setMinutes(now.getMinutes()+30);
   const hh=String(now.getHours()).padStart(2,'0');
@@ -517,28 +694,14 @@ function goToConfirm(){
   const email=document.getElementById('input-email').value.trim();
   const deliv=document.getElementById('delivery-select').value;
   const pickup=document.getElementById('input-pickup').value;
-
-  // 項目名の多言語対応
-  const fieldNames={
-    name: {ja:'お名前',en:'Full Name',zh:'姓名',ko:'이름',it:'Nome',fr:'Nom'},
-    phone:{ja:'電話番号',en:'Phone Number',zh:'电话号码',ko:'전화번호',it:'Telefono',fr:'Téléphone'},
-    email:{ja:'メールアドレス',en:'Email Address',zh:'电子邮件',ko:'이메일',it:'Email',fr:'Email'},
-    deliv:{ja:'配達先',en:'Delivery Destination',zh:'配送地址',ko:'배달지',it:'Indirizzo',fr:'Adresse'},
-    pickup:{ja:'受取時間',en:'Pickup Time',zh:'取餐时间',ko:'수령 시간',it:'Orario',fr:'Heure'}
-  };
+  const fieldNames={name:{ja:'お名前',en:'Full Name',zh:'姓名',ko:'이름',it:'Nome',fr:'Nom'},phone:{ja:'電話番号',en:'Phone Number',zh:'电话号码',ko:'전화번호',it:'Telefono',fr:'Téléphone'},email:{ja:'メールアドレス',en:'Email Address',zh:'电子邮件',ko:'이메일',it:'Email',fr:'Email'},deliv:{ja:'配達先',en:'Delivery Destination',zh:'配送地址',ko:'배달지',it:'Indirizzo',fr:'Adresse'},pickup:{ja:'受取時間',en:'Pickup Time',zh:'取餐时间',ko:'수령 시간',it:'Orario',fr:'Heure'}};
   const required={ja:'を記入してください',en:' is required',zh:'为必填项',ko:'을(를) 입력해주세요',it:' è obbligatorio',fr:' est requis'};
-  const checks=[
-    {val:name, key:'name'},
-    {val:phone,key:'phone'},
-    {val:email,key:'email'},
-    {val:deliv,key:'deliv'},
-    {val:pickup,key:'pickup'}
-  ];
+  const checks=[{val:name,key:'name'},{val:phone,key:'phone'},{val:email,key:'email'},{val:deliv,key:'deliv'},{val:pickup,key:'pickup'}];
   for(const c of checks){
     if(!c.val){
       const fn=(fieldNames[c.key]&&fieldNames[c.key][lang])||fieldNames[c.key]['en'];
       const req=required[lang]||required['en'];
-      err.textContent= lang==='zh'||lang==='ko' ? fn+req : '「'+fn+'」'+req;
+      err.textContent=lang==='zh'||lang==='ko'?fn+req:'「'+fn+'」'+req;
       err.style.display='block';return;
     }
   }
